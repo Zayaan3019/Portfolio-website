@@ -61,7 +61,7 @@ const DATA = {
   profile: {
     name: "Mohamed Zayaan S",
     tagline: "Architecting the Next Generation of Efficient AI and Engineering Intelligence at Scale.",
-    about: "I am a pre-final year undergraduate at IIT Madras with a deep focus on AI/ML, deep learning, and systems engineering. My work spans architecting compiler backends for AI hardware, developing AI/ML, deep learning models, and building scalable distributed AI systems. I am driven by the challenge of co-designing hardware and software to unlock the next generation of AI efficiency.",
+    about: "I am a pre-final year undergraduate at IIT Madras with a deep focus on AI/ML, deep learning, and systems engineering. My work spans architecting compiler backends for AI hardware, developing AI/ML, deep learning models, and building scalable distributed AI systems. I am driven by the challenge of optimizing the interplay between algorithms and underlying architectures to unlock the next generation of AI efficiency.",
     links: {
       resume: "https://drive.google.com/file/d/1aarBTHwfhVeHV14wBM_KzrPw_gpyjCZg/view?usp=sharing",
       github: "https://github.com/Zayaan3019",
