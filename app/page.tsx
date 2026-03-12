@@ -61,7 +61,7 @@ const DATA = {
   profile: {
     name: "Mohamed Zayaan S",
     tagline: "Architecting the Next Generation of Efficient AI and Engineering Intelligence at Scale.",
-    about: "I am a pre-final year undergraduate at IIT Madras (CGPA 8.39/10) pursuing B.Tech in Civil Engineering with a Minor in Computer Science. My work spans architecting compiler backends for AI hardware, developing cutting-edge AI/ML systems, and building scalable distributed inference engines. I am driven by the challenge of co-designing hardware and software to unlock the next generation of AI efficiency. Google India Certified: Student Upskilling Launchpad.",
+    about: "I am a pre-final year undergraduate at IIT Madras, pursuing B.Tech in Civil Engineering with a Minor in Computer Science. My work spans architecting and training AI/ML models, optimizing hardware, developing cutting-edge deep learning systems, and building scalable distributed inference engines. I am driven by the challenge of co-designing hardware and software to unlock the next generation of AI efficiency. With a strong foundation in algorithms, deep learning, and system design, I have applied my skills to research projects, internships, and entrepreneurial ventures. I am passionate about pushing the boundaries of what AI can do while ensuring it is efficient, scalable, and responsible.",
     education: {
       degree: "B.Tech in Civil Engineering (Major) + Minor in CS",
       institution: "Indian Institute of Technology, Madras",
