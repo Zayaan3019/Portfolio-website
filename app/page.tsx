@@ -1,13 +1,13 @@
 "use client";
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion, useScroll, useSpring } from "framer-motion";
 import {
   Github, Linkedin, Mail, FileText,
   Cpu, Network, Brain,
   ArrowUpRight, Code2,
   ChevronDown, Trophy, BookOpen,
   Shield, Database, GitBranch, LineChart,
-  Boxes, Workflow,
+  Boxes, Workflow, Search, Command, X,
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -59,61 +59,221 @@ const SpotlightEffect = ({ className, fill }: { className?: string; fill?: strin
   </svg>
 );
 
-// 1. The Bento Card (Apple/Linear Style)
+// Thin gradient bar tracking scroll depth across the whole page.
+const ScrollProgress = () => {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 200, damping: 30, restDelta: 0.001 });
+  return (
+    <motion.div
+      style={{ scaleX }}
+      className="fixed top-0 left-0 right-0 h-[2px] origin-left z-[60] bg-gradient-to-r from-brand-accent via-cyan-400 to-brand-accent"
+    />
+  );
+};
+
+// Small editorial section label, e.g. "02 — PROJECTS"
+const SectionEyebrow = ({ index, label }: { index: string; label: string }) => (
+  <div className="flex items-center gap-3 mb-4">
+    <span className="text-brand-accent font-mono text-xs">{index}</span>
+    <span className="h-px w-8 bg-brand-accent/40" />
+    <span className="text-neutral-500 font-mono text-xs uppercase tracking-[0.2em]">{label}</span>
+  </div>
+);
+
+// Card wrapper that tracks the cursor and renders a soft radial glow following it.
+const SpotlightCard = ({
+  className,
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ x: 50, y: 50 });
+  const [active, setActive] = useState(false);
+
+  const onMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    setPos({
+      x: ((e.clientX - rect.left) / rect.width) * 100,
+      y: ((e.clientY - rect.top) / rect.height) * 100,
+    });
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      onMouseMove={onMouseMove}
+      onMouseEnter={() => setActive(true)}
+      onMouseLeave={() => setActive(false)}
+      className={className}
+    >
+      <div
+        className="pointer-events-none absolute inset-0 z-0 transition-opacity duration-300"
+        style={{
+          opacity: active ? 1 : 0,
+          background: `radial-gradient(500px circle at ${pos.x}% ${pos.y}%, rgba(59,130,246,0.14), transparent 60%)`,
+        }}
+      />
+      {children}
+    </div>
+  );
+};
+
+// 1. The Bento Card (Apple/Linear Style), now with cursor-tracked spotlight glow.
 const BentoCard = ({
   title, subtitle, desc, tags, icon, link, large
 }: {
   title: string; subtitle: string; desc: string; tags: string[]; icon: React.ReactNode; link?: string; large?: boolean
 }) => (
-  <motion.div
-    whileHover={{ y: -5 }}
-    className={cn(
-      "group relative overflow-hidden rounded-3xl bg-neutral-900/50 border border-neutral-800 p-8 hover:border-brand-accent/50 transition-all duration-300 flex flex-col",
-      large ? "md:col-span-2" : "md:col-span-1"
-    )}
-  >
-    <div className="flex justify-between items-start mb-6">
-      <div className="p-3 bg-neutral-800 rounded-2xl text-white group-hover:scale-110 transition-transform duration-300">
-        {icon}
+  <motion.div whileHover={{ y: -5 }} className={large ? "md:col-span-2" : "md:col-span-1"}>
+    <SpotlightCard className="group relative overflow-hidden rounded-3xl bg-neutral-900/50 border border-neutral-800 p-8 hover:border-brand-accent/50 transition-colors duration-300 flex flex-col h-full">
+      <div className="relative z-10 flex flex-col h-full">
+        <div className="flex justify-between items-start mb-6">
+          <div className="p-3 bg-neutral-800 rounded-2xl text-white group-hover:scale-110 group-hover:text-brand-accent transition-all duration-300">
+            {icon}
+          </div>
+          {link && <ArrowUpRight className="text-neutral-500 group-hover:text-white group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all" />}
+        </div>
+
+        <div className="mb-auto">
+          <h3 className="text-xl font-bold text-white mb-1 group-hover:text-brand-accent transition-colors">{title}</h3>
+          <p className="text-xs font-mono text-brand-accent mb-4 uppercase tracking-wider">{subtitle}</p>
+          <p className="text-neutral-400 text-sm leading-relaxed">{desc}</p>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mt-6 pt-6 border-t border-neutral-800/50">
+          {tags.map((tag, i) => (
+            <span key={i} className="text-[10px] font-mono text-neutral-500 border border-neutral-800 px-2 py-1 rounded bg-neutral-900">
+              {tag}
+            </span>
+          ))}
+        </div>
       </div>
-      {link && <ArrowUpRight className="text-neutral-500 group-hover:text-white transition-colors" />}
-    </div>
 
-    <div className="mb-auto">
-      <h3 className="text-xl font-bold text-white mb-1 group-hover:text-brand-accent transition-colors">{title}</h3>
-      <p className="text-xs font-mono text-brand-accent mb-4 uppercase tracking-wider">{subtitle}</p>
-      <p className="text-neutral-400 text-sm leading-relaxed">{desc}</p>
-    </div>
-
-    <div className="flex flex-wrap gap-2 mt-6 pt-6 border-t border-neutral-800/50">
-      {tags.map((tag, i) => (
-        <span key={i} className="text-[10px] font-mono text-neutral-500 border border-neutral-800 px-2 py-1 rounded bg-neutral-900">
-          {tag}
-        </span>
-      ))}
-    </div>
-
-    {link && <a href={link} target="_blank" rel="noopener noreferrer" aria-label={`Open ${title} on GitHub`} className="absolute inset-0 z-10" />}
+      {link && <a href={link} target="_blank" rel="noopener noreferrer" aria-label={`Open ${title} on GitHub`} className="absolute inset-0 z-20" />}
+    </SpotlightCard>
   </motion.div>
+);
+
+// GitHub contribution graph — live, unauthenticated public embed. Fails silently if unavailable.
+const GitHubActivity = ({ username }: { username: string }) => {
+  const [errored, setErrored] = useState(false);
+  if (errored) return null;
+  return (
+    <div className="bg-neutral-900/30 border border-neutral-800 rounded-3xl p-6 md:p-8 backdrop-blur-sm">
+      <h3 className="text-xs font-mono text-brand-accent uppercase tracking-widest mb-4">Recent Activity</h3>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={`https://ghchart.rshah.org/3b82f6/${username}`}
+        alt={`${username}'s GitHub contribution graph`}
+        loading="lazy"
+        onError={() => setErrored(true)}
+        className="w-full rounded-xl border border-neutral-800/50 bg-neutral-950"
+      />
+    </div>
+  );
+};
+
+// Command palette — Cmd/Ctrl+K quick navigation, matching the "engineer's portfolio" idiom.
+type CommandItem = { label: string; hint: string; action: () => void };
+
+// Mounted fresh each time the palette opens, so its query state always starts empty
+// without needing an effect to reset it.
+const PaletteBody = ({ onClose, items }: { onClose: () => void; items: CommandItem[] }) => {
+  const [query, setQuery] = useState("");
+  const filtered = useMemo(
+    () => items.filter((i) => i.label.toLowerCase().includes(query.toLowerCase())),
+    [items, query]
+  );
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -12, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -12, scale: 0.98 }}
+      transition={{ duration: 0.15 }}
+      onClick={(e) => e.stopPropagation()}
+      className="w-full max-w-xl bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden"
+    >
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-neutral-800">
+        <Search size={18} className="text-neutral-500 flex-shrink-0" />
+        <input
+          autoFocus
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Jump to a section or open a link..."
+          className="bg-transparent outline-none text-white placeholder:text-neutral-600 w-full text-sm"
+          onKeyDown={(e) => {
+            if (e.key === "Escape") onClose();
+            if (e.key === "Enter" && filtered[0]) {
+              filtered[0].action();
+              onClose();
+            }
+          }}
+        />
+        <button onClick={onClose} aria-label="Close" className="text-neutral-600 hover:text-white transition-colors flex-shrink-0">
+          <X size={18} />
+        </button>
+      </div>
+      <div className="max-h-80 overflow-y-auto py-2">
+        {filtered.length === 0 && (
+          <p className="px-5 py-6 text-sm text-neutral-600 text-center">No matches.</p>
+        )}
+        {filtered.map((item, i) => (
+          <button
+            key={i}
+            onClick={() => { item.action(); onClose(); }}
+            className="w-full flex items-center justify-between px-5 py-3 text-left hover:bg-neutral-800/60 transition-colors"
+          >
+            <span className="text-sm text-neutral-200">{item.label}</span>
+            <span className="text-xs font-mono text-neutral-600">{item.hint}</span>
+          </button>
+        ))}
+      </div>
+    </motion.div>
+  );
+};
+
+const CommandPalette = ({
+  open, onClose, items,
+}: {
+  open: boolean; onClose: () => void; items: CommandItem[];
+}) => (
+  <AnimatePresence>
+    {open && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] px-4 bg-black/70 backdrop-blur-sm"
+        onClick={onClose}
+      >
+        <PaletteBody onClose={onClose} items={items} />
+      </motion.div>
+    )}
+  </AnimatePresence>
 );
 
 // --- DATA ---
 const DATA = {
   profile: {
     name: "Mohamed Zayaan S",
-    tagline: "Engineering Verified, Production-Grade Systems Across AI, Backend, and Quantitative Finance.",
-    about: "I'm a pre-final year undergraduate at IIT Madras, pursuing a B.Tech in Civil Engineering with a Minor in Computer Science. My work spans building deep learning architectures from first principles (GPT-style LMs, ViT/CLIP, spatiotemporal GNNs), hardening backend and distributed systems (row-level security, FUSE filesystems, native telemetry collectors), and researching AI evaluation and quant infrastructure. Every project on this page is backed by a real, passing test suite — I care as much about proving a claim as making it, whether that means a 5.96e-8 KV-cache deviation bound or an honest null result published instead of an inflated metric.",
+    tagline: "Engineering Verified, Production-Grade Systems Across AI, Deep Learning, and Distributed Software.",
+    about: "I'm a pre-final year undergraduate at IIT Madras, pursuing a B.Tech in Civil Engineering with a Minor in Computer Science. My work spans building deep learning architectures from first principles (GPT-style LMs, ViT/CLIP, spatiotemporal GNNs), hardening backend and distributed systems (row-level security, FUSE filesystems, native telemetry collectors), and researching AI evaluation and agentic systems. Every project on this page is backed by a real, passing test suite — I care as much about proving a claim as making it, whether that means a 5.96e-8 KV-cache deviation bound or an honest null result published instead of an inflated metric.",
     education: {
       degree: "B.Tech in Civil Engineering (Major) + Minor in CS",
       institution: "Indian Institute of Technology, Madras",
-      cgpa: "8.39/10",
+      cgpa: "8.46/10",
       year: "2023-2027"
     },
     achievements: [
       "Top 6 Finalist among 11,500 teams, American Express CodeStreet 2026",
       "Author, Cortex-Synth (arXiv:2509.06705) — 3D skeleton synthesis via hierarchical graph attention",
-      "Solved 200+ DSA problems on LeetCode, GfG & Coding Ninjas",
-      "JEE Mains: 99.21 percentile | JEE Advanced: Rank 5641"
+      "Solved 400+ DSA problems across LeetCode, Striver, NeetCode, GfG & Codeforces (rating 1190)",
+      "Top 0.8% in JEE Mains (11.13L candidates) · Top 0.5% in JEE Advanced (1.80L candidates)"
     ],
     links: {
       resume: "https://drive.google.com/file/d/1aarBTHwfhVeHV14wBM_KzrPw_gpyjCZg/view?usp=sharing",
@@ -123,6 +283,13 @@ const DATA = {
     }
   },
   experience: [
+    {
+      company: "London Stock Exchange Group (LSEG)",
+      role: "ML Intern",
+      time: "May '26 - July '26",
+      desc: "Architected a Salesignal classification pipeline from scratch, automating Snowflake ingestion into a live feature store. Integrated a Neo4j knowledge graph linking account, product, and ticket entities to cut classifier false positives, and engineered AWS Bedrock batch-LLM workflows over 30 CSV files to distill feedback and telemetry into model features. Worked on Meridian, a microservices market-data platform validating every tick through a real-time data-quality engine, serving clean data and derived analytics from a cost-tiered AWS data lake via a low-latency distribution API.",
+      tags: ["Snowflake", "Neo4j", "AWS Bedrock", "Microservices"]
+    },
     {
       company: "Mavvrik",
       role: "SDE Intern",
@@ -282,10 +449,101 @@ const DATA = {
   ]
 };
 
+const SECTION_IDS = {
+  hero: "top",
+  about: "about",
+  projects: "projects",
+  competitions: "competitions",
+  publications: "publications",
+  experience: "experience",
+  contact: "contact",
+};
+
+// --- EXPERIENCE TIMELINE (scroll-linked progress line) ---
+const ExperienceTimeline = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start 75%", "end 60%"],
+  });
+  const lineHeight = useSpring(scrollYProgress, { stiffness: 120, damping: 25 });
+
+  return (
+    <div ref={containerRef} className="relative space-y-8 max-w-3xl">
+      <div className="absolute left-[5px] top-1 bottom-1 w-[2px] bg-neutral-800" />
+      <motion.div
+        style={{ scaleY: lineHeight }}
+        className="absolute left-[5px] top-1 bottom-1 w-[2px] bg-brand-accent origin-top"
+      />
+      {DATA.experience.map((exp, i) => (
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.4 }}
+          className="relative flex gap-4 md:gap-8 group pl-0"
+        >
+          <div className="flex flex-col items-center relative z-10">
+            <div className="w-3 h-3 rounded-full bg-neutral-950 border-2 border-neutral-700 group-hover:border-brand-accent transition-colors" />
+          </div>
+          <div className="pb-4 -mt-1.5">
+            <div className="flex items-center gap-3 mb-1 flex-wrap">
+              <h3 className="text-xl font-bold text-white">{exp.company}</h3>
+              <span className="text-xs font-mono text-neutral-500 bg-neutral-900 px-2 py-1 rounded">{exp.time}</span>
+            </div>
+            <p className="text-brand-accent font-medium text-sm mb-3">{exp.role}</p>
+            <p className="text-neutral-400 leading-relaxed mb-3">{exp.desc}</p>
+            <div className="flex gap-2 flex-wrap">
+              {exp.tags.map((t, idx) => (
+                <span key={idx} className="text-xs text-neutral-500 font-mono">#{t}</span>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+};
+
 // --- MAIN PAGE ---
 export default function Portfolio() {
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  const scrollToId = useCallback((id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((v) => !v);
+      }
+      if (e.key === "Escape") setPaletteOpen(false);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  const commandItems: CommandItem[] = useMemo(() => [
+    { label: "About", hint: "section", action: () => scrollToId(SECTION_IDS.about) },
+    { label: "Projects & Research", hint: "section", action: () => scrollToId(SECTION_IDS.projects) },
+    { label: "Competitions", hint: "section", action: () => scrollToId(SECTION_IDS.competitions) },
+    { label: "Publications & Patents", hint: "section", action: () => scrollToId(SECTION_IDS.publications) },
+    { label: "Experience", hint: "section", action: () => scrollToId(SECTION_IDS.experience) },
+    { label: "Contact", hint: "section", action: () => scrollToId(SECTION_IDS.contact) },
+    { label: "Open GitHub", hint: "external", action: () => window.open(DATA.profile.links.github, "_blank") },
+    { label: "Open LinkedIn", hint: "external", action: () => window.open(DATA.profile.links.linkedin, "_blank") },
+    { label: "View Resume", hint: "external", action: () => window.open(DATA.profile.links.resume, "_blank") },
+    { label: "Send an Email", hint: "external", action: () => { window.location.href = `mailto:${DATA.profile.links.mail}`; } },
+  ], [scrollToId]);
+
   return (
-    <main className="min-h-screen bg-brand-dark selection:bg-brand-accent/30 selection:text-white font-sans overflow-hidden">
+    <main id={SECTION_IDS.hero} className="min-h-screen bg-brand-dark selection:bg-brand-accent/30 selection:text-white font-sans overflow-x-hidden">
+
+      <ScrollProgress />
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} items={commandItems} />
 
       {/* BACKGROUND ELEMENTS */}
       <div className="fixed inset-0 z-0 bg-[linear-gradient(to_right,#40404012_1px,transparent_1px),linear-gradient(to_bottom,#40404012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>
@@ -294,7 +552,13 @@ export default function Portfolio() {
       <nav className="fixed top-0 w-full z-50 backdrop-blur-md border-b border-white/5 bg-brand-dark/80">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             <span className="font-bold text-xl tracking-tight text-white">Zayaan<span className="text-brand-accent">.</span></span>
-            <div className="flex gap-4">
+            <div className="flex items-center gap-4">
+               <button
+                 onClick={() => setPaletteOpen(true)}
+                 className="hidden sm:flex items-center gap-2 text-xs font-mono text-neutral-500 border border-neutral-800 rounded-lg px-3 py-1.5 hover:border-brand-accent/50 hover:text-neutral-300 transition-colors"
+               >
+                 <Command size={12} /> K
+               </button>
                <a href={DATA.profile.links.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="text-neutral-400 hover:text-white transition-colors"><Github size={20}/></a>
                <a href={DATA.profile.links.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="text-neutral-400 hover:text-white transition-colors"><Linkedin size={20}/></a>
                <a href={`mailto:${DATA.profile.links.mail}`} aria-label="Email" className="text-neutral-400 hover:text-white transition-colors"><Mail size={20}/></a>
@@ -318,7 +582,7 @@ export default function Portfolio() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-accent opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-accent"></span>
             </span>
-            <span className="text-xs font-mono text-neutral-300">IIT Madras • CGPA 8.39/10 • Pre-final Year</span>
+            <span className="text-xs font-mono text-neutral-300">IIT Madras • CGPA 8.46/10 • Pre-final Year</span>
           </div>
 
           {/* Competition Badge */}
@@ -334,38 +598,48 @@ export default function Portfolio() {
 
           {/* THE TAGLINE */}
           <h2 className="text-2xl md:text-4xl font-semibold leading-tight text-transparent bg-clip-text bg-gradient-to-b from-neutral-200 to-neutral-500 max-w-4xl mx-auto">
-            Engineering Verified, Production-Grade Systems Across <span className="text-brand-accent">AI</span>, <br className="hidden md:block"/> Backend, and <span className="text-brand-accent">Quantitative Finance</span>.
+            Engineering Verified, Production-Grade Systems Across <span className="text-brand-accent">AI</span>, <span className="text-brand-accent">Deep Learning</span>, <br className="hidden md:block"/> and Distributed Software.
           </h2>
+
+          {/* Command Palette Hint */}
+          <button
+            onClick={() => setPaletteOpen(true)}
+            className="mt-10 inline-flex items-center gap-2 text-xs font-mono text-neutral-600 hover:text-neutral-400 transition-colors"
+          >
+            <Search size={12} /> Press <kbd className="px-1.5 py-0.5 rounded border border-neutral-800 bg-neutral-900 text-neutral-500">⌘K</kbd> to navigate
+          </button>
         </motion.div>
 
         {/* Scroll Indicator */}
-        <motion.div
+        <motion.button
+          onClick={() => scrollToId(SECTION_IDS.about)}
+          aria-label="Scroll to About"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1, duration: 1 }}
-          className="absolute bottom-10 animate-bounce text-neutral-500"
+          className="absolute bottom-10 animate-bounce text-neutral-500 hover:text-white transition-colors"
         >
           <ChevronDown size={32} />
-        </motion.div>
+        </motion.button>
       </section>
 
       {/* 2. ABOUT ME SECTION */}
-      <section className="relative z-10 py-20 px-6 max-w-7xl mx-auto">
+      <section id={SECTION_IDS.about} className="relative z-10 py-20 px-6 max-w-7xl mx-auto scroll-mt-16">
+        <SectionEyebrow index="01" label="About" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* About Me Card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="lg:col-span-2 bg-neutral-900/30 border border-neutral-800 rounded-3xl p-8 md:p-12 backdrop-blur-sm"
+            className="lg:col-span-2 bg-neutral-900/30 border border-neutral-800 rounded-3xl p-8 md:p-12 backdrop-blur-sm flex flex-col"
           >
-            <h3 className="text-xs font-mono text-brand-accent uppercase tracking-widest mb-4">About Me</h3>
             <p className="text-lg md:text-xl text-neutral-300 leading-relaxed font-light mb-6">
               {DATA.profile.about}
             </p>
 
             {/* Education */}
-            <div className="mt-8 p-6 bg-neutral-900/50 rounded-2xl border border-neutral-800">
+            <div className="mt-auto p-6 bg-neutral-900/50 rounded-2xl border border-neutral-800">
               <h4 className="text-sm font-mono text-brand-accent mb-3">EDUCATION</h4>
               <div className="space-y-2">
                 <p className="text-white font-semibold">{DATA.profile.education.degree}</p>
@@ -398,14 +672,26 @@ export default function Portfolio() {
             </div>
           </motion.div>
         </div>
+
+        {/* GitHub Activity Strip */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.1 }}
+          className="mt-6"
+        >
+          <GitHubActivity username="Zayaan3019" />
+        </motion.div>
       </section>
 
       {/* FEATURED WORK (Bento Grid) */}
-      <section className="relative z-10 py-20 px-6 max-w-7xl mx-auto">
-        <div className="flex items-end justify-between mb-12">
-            <h2 className="text-3xl font-bold text-white">Projects & Research</h2>
-            <span className="text-neutral-500 font-mono text-sm hidden md:block">12 VERIFIED, TEST-BACKED BUILDS</span>
+      <section id={SECTION_IDS.projects} className="relative z-10 py-20 px-6 max-w-7xl mx-auto scroll-mt-16">
+        <div className="flex items-end justify-between mb-2 flex-wrap gap-2">
+            <SectionEyebrow index="02" label="Projects & Research" />
+            <span className="text-neutral-500 font-mono text-sm">12 VERIFIED, TEST-BACKED BUILDS</span>
         </div>
+        <h2 className="text-3xl font-bold text-white mb-12">Projects &amp; Research</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {DATA.projects.map((project, i) => (
@@ -424,40 +710,42 @@ export default function Portfolio() {
       </section>
 
       {/* COMPETITIONS */}
-      <section className="relative z-10 py-20 px-6 max-w-7xl mx-auto">
+      <section id={SECTION_IDS.competitions} className="relative z-10 py-20 px-6 max-w-7xl mx-auto scroll-mt-16">
+         <SectionEyebrow index="03" label="Competitions" />
          <h2 className="text-3xl font-bold text-white mb-12">Competitions</h2>
          <div className="grid grid-cols-1 gap-6">
             {DATA.competitions.map((c, i) => (
-                <motion.div
-                    key={i}
-                    whileHover={{ y: -5 }}
-                    className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-accent/10 to-neutral-900/50 border border-brand-accent/30 p-8 md:p-10 hover:border-brand-accent/60 transition-all duration-300"
-                >
-                    <div className="flex items-start gap-4 mb-4">
-                        <div className="p-3 bg-brand-accent/20 rounded-2xl text-brand-accent">
-                            {c.icon}
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-bold text-white leading-tight">{c.title}</h3>
-                            <p className="text-xs font-mono text-brand-accent uppercase tracking-wider mt-1">{c.subtitle}</p>
-                        </div>
+                <motion.div key={i} whileHover={{ y: -5 }}>
+                  <SpotlightCard className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-accent/10 to-neutral-900/50 border border-brand-accent/30 p-8 md:p-10 hover:border-brand-accent/60 transition-colors duration-300">
+                    <div className="relative z-10">
+                      <div className="flex items-start gap-4 mb-4">
+                          <div className="p-3 bg-brand-accent/20 rounded-2xl text-brand-accent">
+                              {c.icon}
+                          </div>
+                          <div>
+                              <h3 className="text-xl font-bold text-white leading-tight">{c.title}</h3>
+                              <p className="text-xs font-mono text-brand-accent uppercase tracking-wider mt-1">{c.subtitle}</p>
+                          </div>
+                      </div>
+                      <p className="text-neutral-400 text-sm leading-relaxed mb-4 max-w-3xl">{c.desc}</p>
+                      <div className="flex flex-wrap gap-2 pt-4 border-t border-neutral-800/50">
+                          {c.tags.map((tag, idx) => (
+                              <span key={idx} className="text-[10px] font-mono text-brand-accent/70 border border-brand-accent/20 px-2 py-1 rounded bg-brand-accent/5">
+                                  {tag}
+                              </span>
+                          ))}
+                      </div>
                     </div>
-                    <p className="text-neutral-400 text-sm leading-relaxed mb-4 max-w-3xl">{c.desc}</p>
-                    <div className="flex flex-wrap gap-2 pt-4 border-t border-neutral-800/50">
-                        {c.tags.map((tag, idx) => (
-                            <span key={idx} className="text-[10px] font-mono text-brand-accent/70 border border-brand-accent/20 px-2 py-1 rounded bg-brand-accent/5">
-                                {tag}
-                            </span>
-                        ))}
-                    </div>
+                  </SpotlightCard>
                 </motion.div>
             ))}
          </div>
       </section>
 
       {/* PUBLICATIONS & PATENTS */}
-      <section className="relative z-10 py-20 px-6 max-w-7xl mx-auto">
-         <h2 className="text-3xl font-bold text-white mb-12">Publications & Patents</h2>
+      <section id={SECTION_IDS.publications} className="relative z-10 py-20 px-6 max-w-7xl mx-auto scroll-mt-16">
+         <SectionEyebrow index="04" label="Publications & Patents" />
+         <h2 className="text-3xl font-bold text-white mb-12">Publications &amp; Patents</h2>
          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {DATA.publications.map((pub, i) => (
                 <motion.a
@@ -466,87 +754,69 @@ export default function Portfolio() {
                     target="_blank"
                     rel="noopener noreferrer"
                     whileHover={{ y: -5 }}
-                    className="group relative overflow-hidden rounded-3xl bg-neutral-900/50 border border-neutral-800 p-8 hover:border-brand-accent/50 transition-all duration-300"
+                    className="block"
                 >
-                    <div className="flex items-start gap-4 mb-4">
-                        <div className="p-3 bg-neutral-800 rounded-2xl text-white">
-                            <BookOpen size={24} />
-                        </div>
-                        <span className="text-xs font-mono text-neutral-400 bg-neutral-900 px-3 py-1 rounded-full border border-neutral-800">
-                            {pub.status}
-                        </span>
-                        <ArrowUpRight className="ml-auto text-neutral-500 group-hover:text-white transition-colors flex-shrink-0" />
+                  <SpotlightCard className="group relative overflow-hidden rounded-3xl bg-neutral-900/50 border border-neutral-800 p-8 hover:border-brand-accent/50 transition-colors duration-300 h-full">
+                    <div className="relative z-10">
+                      <div className="flex items-start gap-4 mb-4">
+                          <div className="p-3 bg-neutral-800 rounded-2xl text-white">
+                              <BookOpen size={24} />
+                          </div>
+                          <span className="text-xs font-mono text-neutral-400 bg-neutral-900 px-3 py-1 rounded-full border border-neutral-800">
+                              {pub.status}
+                          </span>
+                          <ArrowUpRight className="ml-auto text-neutral-500 group-hover:text-white transition-colors flex-shrink-0" />
+                      </div>
+                      <h3 className="text-xl font-bold text-white mb-3 leading-tight group-hover:text-brand-accent transition-colors">{pub.title}</h3>
+                      <p className="text-neutral-400 text-sm leading-relaxed mb-4">{pub.desc}</p>
+                      <div className="flex flex-wrap gap-2 pt-4 border-t border-neutral-800/50">
+                          {pub.tags.map((tag, idx) => (
+                              <span key={idx} className="text-[10px] font-mono text-neutral-500 border border-neutral-800 px-2 py-1 rounded bg-neutral-900">
+                                  {tag}
+                              </span>
+                          ))}
+                      </div>
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-3 leading-tight group-hover:text-brand-accent transition-colors">{pub.title}</h3>
-                    <p className="text-neutral-400 text-sm leading-relaxed mb-4">{pub.desc}</p>
-                    <div className="flex flex-wrap gap-2 pt-4 border-t border-neutral-800/50">
-                        {pub.tags.map((tag, idx) => (
-                            <span key={idx} className="text-[10px] font-mono text-neutral-500 border border-neutral-800 px-2 py-1 rounded bg-neutral-900">
-                                {tag}
-                            </span>
-                        ))}
-                    </div>
+                  </SpotlightCard>
                 </motion.a>
             ))}
             {DATA.patents.map((patent, i) => (
-                <motion.div
-                    key={`patent-${i}`}
-                    whileHover={{ y: -5 }}
-                    className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-accent/10 to-neutral-900/50 border border-brand-accent/30 p-8 hover:border-brand-accent/60 transition-all duration-300"
-                >
-                    <div className="flex items-start gap-4 mb-4">
-                        <div className="p-3 bg-brand-accent/20 rounded-2xl text-brand-accent">
-                            <FileText size={24} />
-                        </div>
-                        <span className="text-xs font-mono text-brand-accent bg-brand-accent/10 px-3 py-1 rounded-full border border-brand-accent/30">
-                            {patent.status}
-                        </span>
+                <motion.div key={`patent-${i}`} whileHover={{ y: -5 }}>
+                  <SpotlightCard className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-accent/10 to-neutral-900/50 border border-brand-accent/30 p-8 hover:border-brand-accent/60 transition-colors duration-300 h-full">
+                    <div className="relative z-10">
+                      <div className="flex items-start gap-4 mb-4">
+                          <div className="p-3 bg-brand-accent/20 rounded-2xl text-brand-accent">
+                              <FileText size={24} />
+                          </div>
+                          <span className="text-xs font-mono text-brand-accent bg-brand-accent/10 px-3 py-1 rounded-full border border-brand-accent/30">
+                              {patent.status}
+                          </span>
+                      </div>
+                      <h3 className="text-xl font-bold text-white mb-3 leading-tight">{patent.title}</h3>
+                      <p className="text-neutral-400 text-sm leading-relaxed mb-4">{patent.desc}</p>
+                      <div className="flex flex-wrap gap-2 pt-4 border-t border-neutral-800/50">
+                          {patent.tags.map((tag, idx) => (
+                              <span key={idx} className="text-[10px] font-mono text-brand-accent/70 border border-brand-accent/20 px-2 py-1 rounded bg-brand-accent/5">
+                                  {tag}
+                              </span>
+                          ))}
+                      </div>
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-3 leading-tight">{patent.title}</h3>
-                    <p className="text-neutral-400 text-sm leading-relaxed mb-4">{patent.desc}</p>
-                    <div className="flex flex-wrap gap-2 pt-4 border-t border-neutral-800/50">
-                        {patent.tags.map((tag, idx) => (
-                            <span key={idx} className="text-[10px] font-mono text-brand-accent/70 border border-brand-accent/20 px-2 py-1 rounded bg-brand-accent/5">
-                                {tag}
-                            </span>
-                        ))}
-                    </div>
+                  </SpotlightCard>
                 </motion.div>
             ))}
          </div>
       </section>
 
       {/* EXPERIENCE (Timeline) */}
-      <section className="relative z-10 py-20 px-6 max-w-7xl mx-auto mb-20">
+      <section id={SECTION_IDS.experience} className="relative z-10 py-20 px-6 max-w-7xl mx-auto mb-20 scroll-mt-16">
+         <SectionEyebrow index="05" label="Experience" />
          <h2 className="text-3xl font-bold text-white mb-12">Experience</h2>
-         <div className="space-y-8 max-w-3xl">
-            {DATA.experience.map((exp, i) => (
-                <div key={i} className="flex gap-4 md:gap-8 group">
-                    <div className="flex flex-col items-center">
-                        <div className="w-3 h-3 rounded-full bg-neutral-800 border border-neutral-700 group-hover:bg-brand-accent group-hover:border-brand-accent transition-colors"></div>
-                        <div className="w-[1px] flex-1 bg-neutral-800 my-2"></div>
-                    </div>
-                    <div className="pb-12">
-                        <div className="flex items-center gap-3 mb-1">
-                            <h3 className="text-xl font-bold text-white">{exp.company}</h3>
-                            <span className="text-xs font-mono text-neutral-500 bg-neutral-900 px-2 py-1 rounded">{exp.time}</span>
-                        </div>
-                        <p className="text-brand-accent font-medium text-sm mb-3">{exp.role}</p>
-                        <p className="text-neutral-400 leading-relaxed mb-3">
-                            {exp.desc}
-                        </p>
-                        <div className="flex gap-2">
-                            {exp.tags.map((t, idx) => (
-                                <span key={idx} className="text-xs text-neutral-500 font-mono">#{t}</span>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            ))}
-         </div>
+         <ExperienceTimeline />
       </section>
+
       {/* 5. GRAND FINALE (Contact) */}
-      <section className="relative z-10 py-32 px-6 max-w-7xl mx-auto text-center">
+      <section id={SECTION_IDS.contact} className="relative z-10 py-32 px-6 max-w-7xl mx-auto text-center scroll-mt-16">
         <div className="bg-gradient-to-b from-neutral-900/50 to-brand-dark border border-neutral-800 rounded-[3rem] p-12 md:p-24 relative overflow-hidden">
 
           {/* Decorative Glow */}
@@ -556,7 +826,7 @@ export default function Portfolio() {
             Let&apos;s Build Something <br/> Verifiable.
           </h2>
           <p className="text-neutral-400 text-lg md:text-xl max-w-2xl mx-auto mb-12 relative z-10">
-            Open to SDE, ML, and Quant roles — reach out to talk shop or collaborate.
+            Open to SDE, ML, and AI Engineering roles — reach out to talk shop or collaborate.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center relative z-10">
             <a
