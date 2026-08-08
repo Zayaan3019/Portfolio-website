@@ -3,33 +3,27 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 248, 250, 252;
-  --background-start-rgb: 15, 23, 42;
-  --background-end-rgb: 15, 23, 42;
+  --font-inter: 'Inter', sans-serif;
+  --font-jetbrains: 'JetBrains Mono', monospace;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background-color: #0a0a0a;
+  color: #ffffff;
   overflow-x: hidden;
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar for that "Pro" feel */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: #0a0a0a;
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 5px;
+  background: #262626;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #404040;
 }
