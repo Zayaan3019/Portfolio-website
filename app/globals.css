@@ -27,3 +27,29 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #404040;
 }
+/* Smooth in-page navigation, with an opt-out for reduced-motion users. */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Visible keyboard focus on every interactive element. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
