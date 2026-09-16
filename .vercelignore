@@ -1,0 +1,6 @@
+# Local Python virtualenv — 1,400+ files, never part of the Next.js build.
+.venv
+# Local git history and build artifacts; Vercel builds from source.
+.git
+.next
+node_modules
