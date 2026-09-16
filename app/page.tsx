@@ -158,24 +158,42 @@ const BentoCard = ({
   </motion.div>
 );
 
-// GitHub contribution graph — live, unauthenticated public embed. Fails silently if unavailable.
-const GitHubActivity = ({ username }: { username: string }) => {
-  const [errored, setErrored] = useState(false);
-  if (errored) return null;
-  return (
-    <div className="bg-neutral-900/30 border border-neutral-800 rounded-3xl p-6 md:p-8 backdrop-blur-sm">
-      <h3 className="text-xs font-mono text-brand-accent uppercase tracking-widest mb-4">Recent Activity</h3>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={`https://ghchart.rshah.org/3b82f6/${username}`}
-        alt={`${username}'s GitHub contribution graph`}
-        loading="lazy"
-        onError={() => setErrored(true)}
-        className="w-full rounded-xl border border-neutral-800/50 bg-neutral-950"
-      />
-    </div>
-  );
-};
+// Verified-metrics ledger. Every figure is produced by a test or benchmark in the linked repo.
+const PROOF_POINTS = [
+  { value: "5.96e-8", unit: "max deviation", label: "KV-cache decoding proven logit-identical to a full forward pass.", repo: "NanoLM" },
+  { value: "4.04", unit: "ms p99", label: "DeepLOB inference held inside a hard 5 ms CPU budget.", repo: "Adaptive Market Making Engine" },
+  { value: "41.3", unit: "% CPU saved", label: "Native C /proc collector against a psutil baseline at 10 Hz.", repo: "SystemLens" },
+  { value: "0.90", unit: "recall@5", label: "Hybrid retrieval measured over 661 real SEC filing chunks.", repo: "Chronicle" },
+  { value: "4,111", unit: "POSIX cases", label: "pjdfstest conformance for a FUSE filesystem built from scratch.", repo: "Distributed File Sync" },
+  { value: "10,000", unit: "resamples", label: "Paired bootstrap gating every evaluation regression.", repo: "AI-Evals" },
+  { value: "99.3", unit: "% of ticks", label: "Misfire rate of a textbook VPIN threshold, found and calibrated away.", repo: "Adaptive Market Making Engine" },
+  { value: "1", unit: "honest null", label: "Model collapse published in a model card instead of an inflated metric.", repo: "HydroGraph" },
+];
+
+const ProofOfWork = () => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    {PROOF_POINTS.map((pt, i) => (
+      <motion.div
+        key={i}
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.35, delay: (i % 4) * 0.05 }}
+      >
+        <SpotlightCard className="group relative h-full overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 hover:border-brand-accent/50 transition-colors duration-300">
+          <div className="relative z-10 flex h-full flex-col">
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <span className="font-mono text-3xl font-bold tracking-tight text-white">{pt.value}</span>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-brand-accent">{pt.unit}</span>
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-neutral-400">{pt.label}</p>
+            <p className="mt-auto pt-5 font-mono text-[10px] uppercase tracking-wider text-neutral-500">{pt.repo}</p>
+          </div>
+        </SpotlightCard>
+      </motion.div>
+    ))}
+  </div>
+);
 
 // Command palette — Cmd/Ctrl+K quick navigation, matching the "engineer's portfolio" idiom.
 type CommandItem = { label: string; hint: string; action: () => void };
@@ -262,7 +280,7 @@ const DATA = {
   profile: {
     name: "Mohamed Zayaan S",
     tagline: "Engineering Verified, Production-Grade Systems Across AI, Deep Learning, and Distributed Software.",
-    about: "I'm a pre-final year undergraduate at IIT Madras, pursuing a B.Tech in Civil Engineering with a Minor in Computer Science. My work spans building deep learning architectures from first principles (GPT-style LMs, ViT/CLIP, spatiotemporal GNNs), hardening backend and distributed systems (row-level security, FUSE filesystems, native telemetry collectors), and researching AI evaluation and agentic systems. Every project on this page is backed by a real, passing test suite — I care as much about proving a claim as making it, whether that means a 5.96e-8 KV-cache deviation bound or an honest null result published instead of an inflated metric.",
+    about: "I'm a final-year undergraduate at IIT Madras, graduating in May 2027 with a B.Tech in Civil Engineering and a Minor in Computer Science. My work spans building deep learning architectures from first principles (GPT-style LMs, ViT/CLIP, spatiotemporal GNNs), hardening backend and distributed systems (row-level security, FUSE filesystems, native telemetry collectors), and researching AI evaluation and agentic systems. Every project on this page is backed by a real, passing test suite — I care as much about proving a claim as making it, whether that means a 5.96e-8 KV-cache deviation bound or an honest null result published instead of an inflated metric.",
     education: {
       degree: "B.Tech in Civil Engineering (Major) + Minor in CS",
       institution: "Indian Institute of Technology, Madras",
@@ -272,7 +290,7 @@ const DATA = {
     achievements: [
       "Top 6 Finalist among 11,500 teams, American Express CodeStreet 2026",
       "Author, Cortex-Synth (arXiv:2509.06705) — 3D skeleton synthesis via hierarchical graph attention",
-      "Solved 400+ DSA problems across LeetCode, Striver, NeetCode, GfG & Codeforces (rating 1190)",
+      "Codeforces Specialist — max rating 1423, with 400+ DSA problems solved across LeetCode, Striver, NeetCode & GfG",
       "Top 0.8% in JEE Mains (11.13L candidates) · Top 0.5% in JEE Advanced (1.80L candidates)"
     ],
     links: {
@@ -287,7 +305,7 @@ const DATA = {
       company: "London Stock Exchange Group (LSEG)",
       role: "ML Intern",
       time: "May '26 - July '26",
-      desc: "Architected a Salesignal classification pipeline from scratch, automating Snowflake ingestion into a live feature store. Integrated a Neo4j knowledge graph linking account, product, and ticket entities to cut classifier false positives, and engineered AWS Bedrock batch-LLM workflows over 30 CSV files to distill feedback and telemetry into model features. Worked on Meridian, a microservices market-data platform validating every tick through a real-time data-quality engine, serving clean data and derived analytics from a cost-tiered AWS data lake via a low-latency distribution API.",
+      desc: "Architected a Salesignal classification pipeline from scratch, automating Snowflake ingestion into a live feature store. Integrated a Neo4j knowledge graph linking account, product, and ticket entities as first-class features, cutting classifier false positives 20%, and engineered AWS Bedrock batch-LLM workflows over 5 million rows to distill feedback and telemetry into model features. Worked on the streaming quality-analytics plane of LSEG's real-time market-data platform, flagging price anomalies and rolling-volatility outliers and validating every tick within a 50ms assessment budget, cutting analyst alert volume by around 45%.",
       tags: ["Snowflake", "Neo4j", "AWS Bedrock", "Microservices"]
     },
     {
@@ -348,8 +366,9 @@ const DATA = {
   projects: [
     {
       title: "Adaptive Market Making Engine",
+      category: "Quant & Trading",
       subtitle: "Real-Time Market Microstructure",
-      desc: "Architected an 8-service market-making engine ingesting live Binance L2 order-book data through Redis Streams into a TimescaleDB-backed Avellaneda-Stoikov quoting strategy. Trained a DeepLOB CNN-Inception-LSTM with additive attention (146K params) that beat the majority-class baseline by 7.9 F1 points, optimized ONNX Runtime inference to a 4.04ms p99 — 2.8x faster than TorchScript — to meet a hard 5ms budget, and self-calibrated a VPIN toxicity gate that replaced a fixed threshold misfiring on 99.3% of ticks.",
+      desc: "Architected an 8-service market-making engine ingesting live Binance L2 order-book data through Redis Streams into a TimescaleDB-backed Avellaneda-Stoikov quoting strategy. Trained a DeepLOB CNN-Inception-LSTM with additive attention (146K params) that beat the majority-class baseline by 7.9 accuracy points, optimized ONNX Runtime inference to a 4.04ms p99 — 2.2x faster than TorchScript at equal lookback — to meet a hard 5ms budget, and self-calibrated a VPIN toxicity gate that replaced a fixed threshold misfiring on 99.3% of ticks.",
       tags: ["DeepLOB", "ONNX Runtime", "Redis Streams", "TimescaleDB"],
       icon: <LineChart />,
       link: "https://github.com/Zayaan3019/AMME",
@@ -357,6 +376,7 @@ const DATA = {
     },
     {
       title: "SystemLens",
+      category: "Systems",
       subtitle: "Native Systems Telemetry",
       desc: "Replaced psutil with a native C telemetry collector parsing /proc and /sys through persistent file descriptors and zero-allocation pread sampling, cutting agent CPU overhead 41.3% at 10Hz — proven by a paired harness alternating backends across five repetitions. Designed a multi-tenant fleet schema on partitioned PostgreSQL enforcing isolation via row-level security, backed by 133 regression cases validated against real /proc and /sys captures.",
       tags: ["C", "FastAPI", "PostgreSQL RLS", "Prometheus"],
@@ -365,6 +385,7 @@ const DATA = {
     },
     {
       title: "FinGuru",
+      category: "Systems",
       subtitle: "Fintech Security & Account Aggregation",
       desc: "Eliminated an IDOR vulnerability by deriving every user identity from a verified JWT instead of a URL parameter, then enforced tenant isolation with PostgreSQL row-level security, Argon2id hashing, and rotating refresh-token families. Integrated a ReBIT-spec Account Aggregator client (Setu/Finvu/OneMoney) behind a fail-closed PII-redaction pipeline that tokenizes accounts, cards, and PAN/UPI IDs before anything reaches an LLM.",
       tags: ["FastAPI", "PostgreSQL RLS", "RBI Account Aggregator"],
@@ -373,6 +394,7 @@ const DATA = {
     },
     {
       title: "NanoLM",
+      category: "AI & ML",
       subtitle: "GPT-Style Language Model From Scratch",
       desc: "Built a GPT-style language model from first principles — BPE tokenizer, fused QKV projections, pre-norm transformer blocks, tied embeddings — with configs scaling to 345M parameters (GPT-2-medium), validated by parameter-count and shape-correctness tests. Proved KV-cache decoding is logit-identical to a full forward pass within 5.96e-8 max deviation, and enforced correct DDP semantics with loss-scaled gradient accumulation and no_sync bucketing.",
       tags: ["PyTorch", "DDP", "Flash Attention", "BPE"],
@@ -382,6 +404,7 @@ const DATA = {
     },
     {
       title: "NanoVision",
+      category: "AI & ML",
       subtitle: "ViT + CLIP From Scratch",
       desc: "Implemented ViT and CLIP entirely from scratch in pure PyTorch — patch embedding, pre-LN blocks, Flash Attention, DropPath — training a symmetric InfoNCE objective with a learnable temperature clamped at ln(100), matching the CLIP paper's own convention. Backed by 146 unit tests, 89% asserting closed-form numerics or gradients, reaching 83.7% ViT top-1 and 64.2% CLIP zero-shot top-1 on a contamination-free CIFAR-10 gallery.",
       tags: ["PyTorch", "ViT", "CLIP", "InfoNCE"],
@@ -390,6 +413,7 @@ const DATA = {
     },
     {
       title: "HydroGraph",
+      category: "AI & ML",
       subtitle: "Spatiotemporal Flood-Risk GNN",
       desc: "Architected a spatiotemporal GNN (GATv2 + GraphSAGE + GRU) over a directed drainage graph built from OSMnx waterway topology, physically reorienting 28 of 68 edges downhill by real elevation delta. Closed a train-fold normalization leak and built a persistence-baseline evaluation harness verified by 51 passing tests — then root-caused an early-stopping model collapse to a 99.7%-positive validation split and published the failure transparently in the project's own model card instead of reporting an inflated metric.",
       tags: ["GATv2", "GraphSAGE", "GRU", "OSMnx"],
@@ -399,6 +423,7 @@ const DATA = {
     },
     {
       title: "Arbitron",
+      category: "Quant & Trading",
       subtitle: "Autonomous Quant Research Agent",
       desc: "Built an LLM research agent running 13-factor walk-forward backtests with purged, embargoed cross-validation folds, computing Deflated Sharpe Ratio and Probability of Backtest Overfitting against a persisted trial count. Corrected IC significance for 21-day overlapping labels via Newey-West HAC — removing a 4.6x t-stat inflation — and gated regime detection on causal, forward-filtered HMM posteriors to eliminate look-ahead bias.",
       tags: ["FastAPI", "React", "Llama 3.3", "scikit-learn"],
@@ -407,6 +432,7 @@ const DATA = {
     },
     {
       title: "Chronicle",
+      category: "AI & ML",
       subtitle: "Multi-Agentic Financial Research Engine",
       desc: "Built a 7-stage multi-agent research pipeline over live SEC EDGAR and GDELT sources that denies unchecked LLM output, enforcing point-in-time correctness through pre-ranking filters on dense and sparse retrieval, proven over 200 trials. Added a numeric-claim verifier forcing correction on any unsupported figure, and ran a retrieval ablation across BM25, dense, and hybrid+cross-encoder to reach 0.90 recall@5 on 661 real SEC filing chunks.",
       tags: ["RAG", "SEC EDGAR", "Chroma", "BM25"],
@@ -415,14 +441,16 @@ const DATA = {
     },
     {
       title: "Neuro-Econometric Intelligence Engine",
+      category: "Quant & Trading",
       subtitle: "Hybrid Deep Learning + Econometrics",
-      desc: "Fused a causal-masked Transformer-LSTM with ARDL/ARIMA econometric baselines via a learned gating network, proving the regime-detection mechanism genuinely causal by perturbation testing. Ran walk-forward evaluation across 1,394 predictions with zero train/test index overlap, and audited the pipeline end-to-end — catching a leakage bug and a placeholder statistic before reporting the corrected, honest null result.",
+      desc: "Fused a causal-masked Transformer-LSTM with ARDL/ARIMA econometric baselines via a learned gating network, proving the regime-detection mechanism genuinely causal by perturbation testing. Ran walk-forward evaluation across 1,574 predictions with zero train/test index overlap, and audited the pipeline end-to-end — catching a leakage bug and a placeholder statistic before reporting the corrected, honest null result.",
       tags: ["PyTorch", "statsmodels", "Transformer", "LSTM"],
       icon: <Workflow />,
       link: "https://github.com/Zayaan3019/Neuro-Econometric-Forecaster"
     },
     {
       title: "AI-Evals",
+      category: "AI & ML",
       subtitle: "LLM Observability & Judge Calibration",
       desc: "Built an OTel-native tracing SDK with bounded-queue export, redaction-before-egress, and sub-millisecond p50 overhead, backed by a 4-tier evaluator registry verified by double-execution. Calibrated LLM judges against human labels with Cohen's kappa, gated regressions with a 10,000-sample paired bootstrap, and caught and fixed a real superuser Postgres row-level-security bypass defect in the process.",
       tags: ["OpenTelemetry", "ClickHouse", "PostgreSQL", "React"],
@@ -432,6 +460,7 @@ const DATA = {
     },
     {
       title: "Distributed File Sync Engine",
+      category: "Systems",
       subtitle: "Peer-to-Peer FUSE Filesystem",
       desc: "Built a FUSE filesystem (pyfuse3) replicating peer edits transparently through Merkle-tree 4KB chunk delta transfer, layering vector-clock causality over a crash-recoverable SQLite catalog so conflicts surface as visible files. Secured peer sync with PSK-derived AES-256-GCM encryption and challenge-response mutual authentication, validating POSIX compliance at 4,111 of 8,798 pjdfstest cases.",
       tags: ["FUSE", "asyncio", "Merkle Trees", "AES-256-GCM"],
@@ -440,6 +469,7 @@ const DATA = {
     },
     {
       title: "Volt-Infer",
+      category: "Systems",
       subtitle: "Decentralized LLM Inference Runtime",
       desc: "Built an LLM inference server with paged KV caching, copy-on-write forks, and reference-counted page eviction, debugging a network header miscalculation and verifying request-keyed demultiplexing across 50 concurrent connections. Corrected an asymmetric INT8 quantization bug so CPU and GPU paths agree within 1% of FP16, guarding Triton kernel imports for CPU-only fallback behind a hysteresis-based autoscaler.",
       tags: ["PyTorch", "ONNX", "asyncio", "Triton"],
@@ -449,9 +479,20 @@ const DATA = {
   ]
 };
 
+const PROJECT_FILTERS = ["All", "AI & ML", "Quant & Trading", "Systems"];
+
+const NAV_LINKS = [
+  { id: "about", label: "About" },
+  { id: "proof", label: "Proof" },
+  { id: "projects", label: "Projects" },
+  { id: "experience", label: "Experience" },
+  { id: "contact", label: "Contact" },
+];
+
 const SECTION_IDS = {
   hero: "top",
   about: "about",
+  proof: "proof",
   projects: "projects",
   competitions: "competitions",
   publications: "publications",
@@ -509,6 +550,12 @@ const ExperienceTimeline = () => {
 // --- MAIN PAGE ---
 export default function Portfolio() {
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [filter, setFilter] = useState("All");
+
+  const visibleProjects = useMemo(
+    () => (filter === "All" ? DATA.projects : DATA.projects.filter((pr) => pr.category === filter)),
+    [filter]
+  );
 
   const scrollToId = useCallback((id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -528,6 +575,7 @@ export default function Portfolio() {
 
   const commandItems: CommandItem[] = useMemo(() => [
     { label: "About", hint: "section", action: () => scrollToId(SECTION_IDS.about) },
+    { label: "Proof of Work", hint: "section", action: () => scrollToId(SECTION_IDS.proof) },
     { label: "Projects & Research", hint: "section", action: () => scrollToId(SECTION_IDS.projects) },
     { label: "Competitions", hint: "section", action: () => scrollToId(SECTION_IDS.competitions) },
     { label: "Publications & Patents", hint: "section", action: () => scrollToId(SECTION_IDS.publications) },
@@ -552,6 +600,17 @@ export default function Portfolio() {
       <nav className="fixed top-0 w-full z-50 backdrop-blur-md border-b border-white/5 bg-brand-dark/80">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             <span className="font-bold text-xl tracking-tight text-white">Zayaan<span className="text-brand-accent">.</span></span>
+            <div className="hidden md:flex items-center gap-7">
+              {NAV_LINKS.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => scrollToId(item.id)}
+                  className="text-sm text-neutral-400 hover:text-white transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60"
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
             <div className="flex items-center gap-4">
                <button
                  onClick={() => setPaletteOpen(true)}
@@ -576,19 +635,24 @@ export default function Portfolio() {
           transition={{ duration: 0.8 }}
           className="max-w-5xl"
         >
-          {/* Status Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-neutral-800 bg-neutral-900/80 backdrop-blur-sm mb-6 mx-auto">
+          {/* Status badges */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-neutral-800 bg-neutral-900/80 backdrop-blur-sm">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-accent opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-accent"></span>
             </span>
-            <span className="text-xs font-mono text-neutral-300">IIT Madras • CGPA 8.46/10 • Pre-final Year</span>
+            <span className="text-xs font-mono text-neutral-300">IIT Madras • CGPA 8.46/10 • Final Year</span>
           </div>
 
-          {/* Competition Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-accent/30 bg-brand-accent/10 backdrop-blur-sm mb-10 mx-auto ml-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-accent/30 bg-brand-accent/10 backdrop-blur-sm">
             <Trophy size={12} className="text-brand-accent" />
             <span className="text-xs font-mono text-brand-accent">Top 6 / 11,500 Teams • Amex CodeStreet 2026</span>
+          </div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-neutral-800 bg-neutral-900/80 backdrop-blur-sm">
+            <Code2 size={12} className="text-brand-accent" />
+            <span className="text-xs font-mono text-neutral-300">Codeforces Specialist • Max rating 1423</span>
+          </div>
           </div>
 
           {/* THE NAME */}
@@ -608,6 +672,31 @@ export default function Portfolio() {
           >
             <Search size={12} /> Press <kbd className="px-1.5 py-0.5 rounded border border-neutral-800 bg-neutral-900 text-neutral-500">⌘K</kbd> to navigate
           </button>
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <button
+              onClick={() => scrollToId(SECTION_IDS.proof)}
+              className="px-6 py-3 rounded-full bg-white text-black text-sm font-semibold hover:bg-neutral-200 transition-colors"
+            >
+              See the proof
+            </button>
+            <a
+              href={DATA.profile.links.resume}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-6 py-3 rounded-full border border-neutral-700 text-white text-sm font-semibold hover:border-white/60 hover:bg-neutral-900 transition-colors inline-flex items-center gap-2"
+            >
+              <FileText size={16} /> Resume
+            </a>
+            <a
+              href={DATA.profile.links.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-6 py-3 rounded-full border border-neutral-800 text-neutral-300 text-sm font-semibold hover:text-white hover:border-neutral-600 transition-colors inline-flex items-center gap-2"
+            >
+              <Github size={16} /> GitHub
+            </a>
+          </div>
         </motion.div>
 
         {/* Scroll Indicator */}
@@ -673,30 +762,53 @@ export default function Portfolio() {
           </motion.div>
         </div>
 
-        {/* GitHub Activity Strip */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.1 }}
-          className="mt-6"
-        >
-          <GitHubActivity username="Zayaan3019" />
-        </motion.div>
+      </section>
+
+      {/* PROOF OF WORK */}
+      <section id={SECTION_IDS.proof} className="relative z-10 py-20 px-6 max-w-7xl mx-auto scroll-mt-16">
+        <SectionEyebrow index="02" label="Proof of Work" />
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-12">
+          <h2 className="text-3xl font-bold text-white">The numbers behind the claims</h2>
+          <p className="text-neutral-500 text-sm max-w-md md:text-right">
+            Each figure is produced by a test or a benchmark in the linked repository, not an estimate.
+          </p>
+        </div>
+        <ProofOfWork />
       </section>
 
       {/* FEATURED WORK (Bento Grid) */}
       <section id={SECTION_IDS.projects} className="relative z-10 py-20 px-6 max-w-7xl mx-auto scroll-mt-16">
         <div className="flex items-end justify-between mb-2 flex-wrap gap-2">
-            <SectionEyebrow index="02" label="Projects & Research" />
+            <SectionEyebrow index="03" label="Projects & Research" />
             <span className="text-neutral-500 font-mono text-sm">12 VERIFIED, TEST-BACKED BUILDS</span>
         </div>
-        <h2 className="text-3xl font-bold text-white mb-12">Projects &amp; Research</h2>
+        <h2 className="text-3xl font-bold text-white mb-6">Projects &amp; Research</h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {DATA.projects.map((project, i) => (
+        <div className="flex flex-wrap gap-2 mb-10">
+          {PROJECT_FILTERS.map((f) => {
+            const count = f === "All" ? DATA.projects.length : DATA.projects.filter((pr) => pr.category === f).length;
+            return (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                aria-pressed={filter === f}
+                className={cn(
+                  "px-4 py-2 rounded-full text-xs font-mono uppercase tracking-wider border transition-colors",
+                  filter === f
+                    ? "border-brand-accent/60 bg-brand-accent/15 text-brand-accent"
+                    : "border-neutral-800 bg-neutral-900/50 text-neutral-500 hover:text-neutral-300 hover:border-neutral-700"
+                )}
+              >
+                {f} <span className="text-neutral-600">{count}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <motion.div layout className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {visibleProjects.map((project) => (
                 <BentoCard
-                    key={i}
+                    key={project.title}
                     title={project.title}
                     subtitle={project.subtitle}
                     desc={project.desc}
@@ -706,12 +818,12 @@ export default function Portfolio() {
                     large={project.large}
                 />
             ))}
-        </div>
+        </motion.div>
       </section>
 
       {/* COMPETITIONS */}
       <section id={SECTION_IDS.competitions} className="relative z-10 py-20 px-6 max-w-7xl mx-auto scroll-mt-16">
-         <SectionEyebrow index="03" label="Competitions" />
+         <SectionEyebrow index="04" label="Competitions" />
          <h2 className="text-3xl font-bold text-white mb-12">Competitions</h2>
          <div className="grid grid-cols-1 gap-6">
             {DATA.competitions.map((c, i) => (
@@ -744,7 +856,7 @@ export default function Portfolio() {
 
       {/* PUBLICATIONS & PATENTS */}
       <section id={SECTION_IDS.publications} className="relative z-10 py-20 px-6 max-w-7xl mx-auto scroll-mt-16">
-         <SectionEyebrow index="04" label="Publications & Patents" />
+         <SectionEyebrow index="05" label="Publications & Patents" />
          <h2 className="text-3xl font-bold text-white mb-12">Publications &amp; Patents</h2>
          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {DATA.publications.map((pub, i) => (
@@ -810,7 +922,7 @@ export default function Portfolio() {
 
       {/* EXPERIENCE (Timeline) */}
       <section id={SECTION_IDS.experience} className="relative z-10 py-20 px-6 max-w-7xl mx-auto mb-20 scroll-mt-16">
-         <SectionEyebrow index="05" label="Experience" />
+         <SectionEyebrow index="06" label="Experience" />
          <h2 className="text-3xl font-bold text-white mb-12">Experience</h2>
          <ExperienceTimeline />
       </section>
@@ -826,7 +938,7 @@ export default function Portfolio() {
             Let&apos;s Build Something <br/> Verifiable.
           </h2>
           <p className="text-neutral-400 text-lg md:text-xl max-w-2xl mx-auto mb-12 relative z-10">
-            Open to SDE, ML, and AI Engineering roles — reach out to talk shop or collaborate.
+            Graduating from IIT Madras in May 2027 and open to roles in quantitative research and trading, AI/ML engineering, and backend systems. Every claim on this page is reproducible — clone any repository and run its test suite.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center relative z-10">
             <a
@@ -848,8 +960,16 @@ export default function Portfolio() {
       </section>
 
       {/* FOOTER */}
-      <footer className="py-8 border-t border-neutral-900 bg-black text-center text-neutral-600 text-sm font-mono relative z-10">
-        <p>Architected & Built by Mohamed Zayaan S.</p>
+      <footer className="py-10 border-t border-neutral-900 bg-black relative z-10">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-neutral-600 text-sm font-mono">
+          <p>Architected & Built by Mohamed Zayaan S.</p>
+          <div className="flex items-center gap-5">
+            <a href={DATA.profile.links.github} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a>
+            <a href={DATA.profile.links.linkedin} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">LinkedIn</a>
+            <a href={DATA.profile.links.resume} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Resume</a>
+            <a href={"mailto:" + DATA.profile.links.mail} className="hover:text-white transition-colors">Email</a>
+          </div>
+        </div>
       </footer>
     </main>
   );
