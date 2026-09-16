@@ -297,6 +297,7 @@ const DATA = {
       resume: "https://drive.google.com/file/d/1aarBTHwfhVeHV14wBM_KzrPw_gpyjCZg/view?usp=sharing",
       github: "https://github.com/Zayaan3019",
       linkedin: "https://www.linkedin.com/in/mohamed-zayaan-s",
+      codeforces: "https://codeforces.com/profile/Zayaan30_",
       mail: "ce23b092@smail.iitm.ac.in"
     }
   },
@@ -341,8 +342,8 @@ const DATA = {
     {
       title: "American Express CodeStreet 2026",
       subtitle: "Top 6 Finalist • 11,500 Teams Nationwide",
-      desc: "Advanced to the Top 6 out of 11,500 teams with ZKD Concierge, an autonomous travel-disruption agent. Architected a two-layer system: a LangGraph planner operates with zero spend authority while a Temporal.io saga executes under an OPA policy gate. Encoded DGCA duty-of-care regulation as executable Rego policy, enforced by 25 automated compliance tests, and validated re-booking economics via a 250,000-case Monte Carlo simulation, byte-reproducible under a fixed seed.",
-      tags: ["LangGraph", "Temporal.io", "OPA/Rego", "Next.js"],
+      desc: "Designed an autonomous flight concierge pipeline that spends only on delivery-verified consent and otherwise escalates to a human. Shipped it on AWS Bedrock and LangGraph with schema-validated tool-calling, forced tool-choice, a circuit breaker, and an 8s timeout. Trained an isotonic-calibrated XGBoost model over 11M flights across 5 countries — 0.83 PR-AUC with 5.4x lift on an out-of-time split, explained with tree-SHAP — and built kernel-weighted neighbour smoothing over same-airport flights, cutting real model calls 50% at equal staleness.",
+      tags: ["AWS Bedrock", "LangGraph", "XGBoost", "tree-SHAP"],
       icon: <Trophy />
     }
   ],
@@ -583,6 +584,7 @@ export default function Portfolio() {
     { label: "Contact", hint: "section", action: () => scrollToId(SECTION_IDS.contact) },
     { label: "Open GitHub", hint: "external", action: () => window.open(DATA.profile.links.github, "_blank") },
     { label: "Open LinkedIn", hint: "external", action: () => window.open(DATA.profile.links.linkedin, "_blank") },
+    { label: "Open Codeforces", hint: "external", action: () => window.open(DATA.profile.links.codeforces, "_blank") },
     { label: "View Resume", hint: "external", action: () => window.open(DATA.profile.links.resume, "_blank") },
     { label: "Send an Email", hint: "external", action: () => { window.location.href = `mailto:${DATA.profile.links.mail}`; } },
   ], [scrollToId]);
@@ -649,10 +651,15 @@ export default function Portfolio() {
             <Trophy size={12} className="text-brand-accent" />
             <span className="text-xs font-mono text-brand-accent">Top 6 / 11,500 Teams • Amex CodeStreet 2026</span>
           </div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-neutral-800 bg-neutral-900/80 backdrop-blur-sm">
+          <a
+            href={DATA.profile.links.codeforces}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-neutral-800 bg-neutral-900/80 backdrop-blur-sm hover:border-brand-accent/50 transition-colors"
+          >
             <Code2 size={12} className="text-brand-accent" />
             <span className="text-xs font-mono text-neutral-300">Codeforces Specialist • Max rating 1423</span>
-          </div>
+          </a>
           </div>
 
           {/* THE NAME */}
@@ -938,7 +945,7 @@ export default function Portfolio() {
             Let&apos;s Build Something <br/> Verifiable.
           </h2>
           <p className="text-neutral-400 text-lg md:text-xl max-w-2xl mx-auto mb-12 relative z-10">
-            Graduating from IIT Madras in May 2027 and open to roles in quantitative research and trading, AI/ML engineering, and backend systems. Every claim on this page is reproducible — clone any repository and run its test suite.
+            Graduating from IIT Madras in May 2027 and open to roles in quantitative research and trading, AI/ML research and engineering, and software development across backend and distributed systems. Every claim on this page is reproducible — clone any repository and run its test suite.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center relative z-10">
             <a
@@ -966,6 +973,7 @@ export default function Portfolio() {
           <div className="flex items-center gap-5">
             <a href={DATA.profile.links.github} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a>
             <a href={DATA.profile.links.linkedin} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">LinkedIn</a>
+            <a href={DATA.profile.links.codeforces} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Codeforces</a>
             <a href={DATA.profile.links.resume} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Resume</a>
             <a href={"mailto:" + DATA.profile.links.mail} className="hover:text-white transition-colors">Email</a>
           </div>
