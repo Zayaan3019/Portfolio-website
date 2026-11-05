@@ -51,7 +51,7 @@ function subscribeTheme(cb: () => void) {
 export function useTheme(): Theme | null {
   return useSyncExternalStore(
     subscribeTheme,
-    () => (document.documentElement.dataset.theme === "dark" ? "dark" : "light"),
+    () => (document.documentElement.dataset.theme === "light" ? "light" : "dark"),
     () => null,
   );
 }
@@ -70,3 +70,9 @@ const noop = () => () => {};
 export function useHydrated(): boolean {
   return useSyncExternalStore(noop, () => true, () => false);
 }
+
+/* Global overlays are opened by events so any button, anywhere, can trigger them. */
+export const PALETTE_EVENT = "ui:palette";
+export const DESK_EVENT = "ui:desk";
+export const openPalette = () => window.dispatchEvent(new Event(PALETTE_EVENT));
+export const openDesk = () => window.dispatchEvent(new Event(DESK_EVENT));

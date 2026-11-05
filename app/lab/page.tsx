@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { Rail } from "@/components/Rail";
 import { Lab } from "@/components/lab/LabLoader";
-import { Footer } from "@/components/Footer";
+import { Footer } from "@/components/site/Footer";
+import { TopBar } from "@/components/site/TopBar";
+import { SectionHead } from "@/components/home/Sections";
 
 export const metadata: Metadata = {
   title: "Lab",
@@ -11,40 +12,43 @@ export const metadata: Metadata = {
 };
 
 const ITEMS = [
-  { id: "kv", label: "KV-cache equivalence" },
+  { id: "kv", label: "KV cache" },
   { id: "mm", label: "Market making" },
   { id: "bs", label: "Regression gate" },
   { id: "mk", label: "Merkle sync" },
-  { id: "home", label: "Back to the main page", href: "/" },
 ];
 
 export default function LabPage() {
   return (
-    <div className="shell">
-      <Rail items={ITEMS} />
-      <main id="content">
-        <section className="intro" aria-labelledby="lab-h">
-          <h1 id="lab-h">Lab</h1>
-          <p className="intro-text">
-            Four ideas from my projects, reimplemented small enough to run in a browser and exact enough to test. The
-            simulation code is unit-tested in this site&apos;s repository, with seeded random numbers so every run is
-            reproducible.
-          </p>
+    <>
+      <TopBar items={ITEMS} home={false} />
+      <main id="content" className="lab-page">
+        <section className="section wrap lab-intro" aria-labelledby="lab-page-h">
+          <SectionHead
+            id="lab-page-h"
+            index="Lab"
+            title={
+              <>
+                Four experiments. <em>Real computation.</em>
+              </>
+            }
+            lede="Ideas from my projects, reimplemented small enough to run in a browser and exact enough to test. The simulation code is unit-tested in this site's CI with seeded random numbers, so every run is reproducible."
+          />
         </section>
-        <section id="kv" className="section">
+        <section id="kv" className="section wrap lab-slot">
           <Lab id="kv-cache" />
         </section>
-        <section id="mm" className="section">
+        <section id="mm" className="section wrap lab-slot">
           <Lab id="market-making" />
         </section>
-        <section id="bs" className="section">
+        <section id="bs" className="section wrap lab-slot">
           <Lab id="bootstrap" />
         </section>
-        <section id="mk" className="section">
+        <section id="mk" className="section wrap lab-slot">
           <Lab id="merkle" />
         </section>
-        <Footer />
       </main>
-    </div>
+      <Footer />
+    </>
   );
 }
